@@ -1,4 +1,4 @@
-package rabbitmq
+package erabbitmq
 
 import (
 	amqp "github.com/rabbitmq/amqp091-go"
@@ -12,8 +12,6 @@ type PubInput struct {
 	Immediate    bool
 	Msg          amqp.Publishing
 
-	// if you use channel confirm mode
-	Timeout    time.Duration // Timeout for waiting confirmation successfully sending from rabbitmq
 	DelayRetry time.Duration
 	MaxRetry   int
 }

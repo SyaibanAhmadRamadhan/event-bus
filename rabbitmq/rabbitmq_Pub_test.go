@@ -1,11 +1,11 @@
-package rabbitmq_test
+package erabbitmq_test
 
 import (
 	"context"
 	"fmt"
 	"github.com/guregu/null/v5"
 	amqp "github.com/rabbitmq/amqp091-go"
-	"go-event-bus/rabbitmq"
+	erabbitmq "go-event-bus/rabbitmq"
 	"log"
 	"testing"
 	"time"
@@ -18,7 +18,7 @@ func TestName(t *testing.T) {
 func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
-	r := rabbitmq.New("amqp://rabbitmq:pas12345@localhost:5672/", rabbitmq.WithReconnect(time.Second, null.Int{}))
+	r := erabbitmq.New("amqp://rabbitmq:pas12345@localhost:5672/", erabbitmq.WithReconnect(time.Second, null.Int{}))
 
 	//var mu sync.Mutex
 	successCount := 0
@@ -27,7 +27,7 @@ func main() {
 	//go func(msg string) {
 
 	go func() {
-		output, err := r.Publish(context.Background(), rabbitmq.PubInput{
+		output, err := r.Publish(context.Background(), erabbitmq.PubInput{
 			ExchangeName: "notifications",
 			RoutingKey:   "notification.type.email",
 			Mandatory:    false,
@@ -49,7 +49,7 @@ func main() {
 
 	go func() {
 		time.Sleep(2 * time.Second)
-		output, err := r.Publish(context.Background(), rabbitmq.PubInput{
+		output, err := r.Publish(context.Background(), erabbitmq.PubInput{
 			ExchangeName: "notifications",
 			RoutingKey:   "notification.type.email",
 			Mandatory:    false,
@@ -84,5 +84,5 @@ func main() {
 
 	// Print total success count
 	fmt.Printf("Total messages successfully sent: %d\n", successCount)
-	time.Sleep(10 * time.Second)
+	//time.Sleep(10 * time.Second)
 }

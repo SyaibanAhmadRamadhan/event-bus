@@ -1,4 +1,4 @@
-package rabbitmq
+package erabbitmq
 
 import (
 	"context"
@@ -10,20 +10,14 @@ import (
 )
 
 func (r *rabbitMQ) Publish(ctx context.Context, input PubInput) (output PubOutput, err error) {
-	select {
-	case <-r.isShutdown:
+	if r.isClosed {
 		return output, eventbus.Error(ErrProcessShutdownIsRunning)
-	default:
 	}
 
 	r.wg.Add(1)
 	defer r.wg.Done()
 
-	if input.Timeout == 0 {
-		input.Timeout = time.Second * 10
-	}
-	ctx, cancel := context.WithTimeout(ctx, input.Timeout)
-	defer cancel()
+	time.Sleep(5 * time.Second)
 
 	if input.Msg.MessageId == "" {
 		input.Msg.MessageId = uuid.New().String()
@@ -43,11 +37,12 @@ func (r *rabbitMQ) retryPublish(ctx context.Context, input PubInput) (output Pub
 			return
 		}
 
+		if r.isClosed {
+			return output, eventbus.Error(ErrProcessShutdownIsRunning)
+		}
 		select {
 		case <-ctx.Done():
 			return output, eventbus.Error(ctx.Err())
-		case <-r.isShutdown:
-			return output, eventbus.Error(ErrProcessShutdownIsRunning)
 		default:
 			log.Printf("publish error: %v, attempting reconnection (%d/%d)", err, attempts+1, input.MaxRetry)
 			r.signalReconnect()

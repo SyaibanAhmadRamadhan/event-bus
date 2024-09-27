@@ -1,13 +1,21 @@
-package rabbitmq
+package erabbitmq
 
 import (
 	"errors"
 	"fmt"
 	amqp "github.com/rabbitmq/amqp091-go"
+	eventbus "go-event-bus"
+	"go.uber.org/mock/gomock"
 	"log"
 	"sync"
 	"time"
 )
+
+type RabbitMQPubSub = eventbus.PubSub[PubInput, PubOutput, SubInput, SubOutput]
+
+func NewMockRabbitMQPubSub(mock *gomock.Controller) *eventbus.MockPubSub[PubInput, PubOutput, SubInput, SubOutput] {
+	return eventbus.NewMockPubSub[PubInput, PubOutput, SubInput, SubOutput](mock)
+}
 
 var ErrProcessShutdownIsRunning = errors.New("process shutdown is running")
 var errClosedRabbitmq = errors.New("rabbitmq closed")
@@ -16,21 +24,19 @@ type rabbitMQ struct {
 	ch   *amqp.Channel
 	conn *amqp.Connection
 
-	isClosed   bool
-	isShutdown chan struct{}
-	mu         sync.Mutex
-	wg         sync.WaitGroup
-	config     *Config
+	isClosed bool
+	mu       sync.Mutex
+	wg       sync.WaitGroup
+	config   *Config
 }
 
 func New(url string, opt ...Options) *rabbitMQ {
 	r := &rabbitMQ{
-		ch:         nil,
-		conn:       nil,
-		config:     &Config{},
-		isClosed:   false,
-		isShutdown: make(chan struct{}),
-		wg:         sync.WaitGroup{},
+		ch:       nil,
+		conn:     nil,
+		config:   &Config{},
+		isClosed: false,
+		wg:       sync.WaitGroup{},
 	}
 
 	for _, o := range opt {
@@ -50,20 +56,17 @@ func New(url string, opt ...Options) *rabbitMQ {
 
 // Close shuts down the RabbitMQ connection gracefully
 func (r *rabbitMQ) Close() {
-	r.mu.Lock()
-	defer r.mu.Unlock()
-
 	if r.isClosed {
 		return
 	}
+	r.mu.Lock()
 	r.isClosed = true
+	r.mu.Unlock()
 
 	done := make(chan struct{})
 	go r.waitForShutdown(done)
 
-	r.isShutdown <- struct{}{}
 	<-done
-	close(r.isShutdown)
 	close(done)
 	close(r.config.reconnect)
 
@@ -78,11 +81,6 @@ func (r *rabbitMQ) Close() {
 
 func (r *rabbitMQ) waitForShutdown(done chan struct{}) {
 	r.wg.Wait()
-	select {
-	case <-r.isShutdown:
-	default:
-		break
-	}
 	done <- struct{}{}
 }
 
@@ -162,22 +160,16 @@ func (r *rabbitMQ) reconnectUrl(url string) {
 func (r *rabbitMQ) tryReconnect(url string) {
 	if r.config.maxRetryConnection.Valid {
 		for i := int64(1); i <= r.config.maxRetryConnection.Int64; i++ {
-			select {
-			case <-r.isShutdown:
-				log.Println("process shutdown during reconnect attempt")
-				break
-			default:
-				log.Printf("Attempt %d to reconnect...", i)
-				if err := r.connect(url); err != nil {
-					if errors.Is(err, errClosedRabbitmq) {
-						return
-					}
-					log.Printf("Reconnection attempt %d failed: %v", i, err)
-					time.Sleep(r.config.reconnectDelay)
-				} else {
-					log.Println("Reconnection successful")
+			log.Printf("Attempt %d to reconnect...", i)
+			if err := r.connect(url); err != nil {
+				if errors.Is(err, errClosedRabbitmq) {
 					return
 				}
+				log.Printf("Reconnection attempt %d failed: %v", i, err)
+				time.Sleep(r.config.reconnectDelay)
+			} else {
+				log.Println("Reconnection successful")
+				return
 			}
 		}
 		log.Println("Max reconnection attempts reached, giving up")

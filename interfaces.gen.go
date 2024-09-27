@@ -15,31 +15,31 @@ import (
 	gomock "go.uber.org/mock/gomock"
 )
 
-// MockpubSub is a mock of pubSub interface.
-type MockpubSub[pubInput any, pubOutput any, subInput any, subOutput any] struct {
+// MockPubSub is a mock of PubSub interface.
+type MockPubSub[pubInput any, pubOutput any, subInput any, subOutput any] struct {
 	ctrl     *gomock.Controller
-	recorder *MockpubSubMockRecorder[pubInput, pubOutput, subInput, subOutput]
+	recorder *MockPubSubMockRecorder[pubInput, pubOutput, subInput, subOutput]
 }
 
-// MockpubSubMockRecorder is the mock recorder for MockpubSub.
-type MockpubSubMockRecorder[pubInput any, pubOutput any, subInput any, subOutput any] struct {
-	mock *MockpubSub[pubInput, pubOutput, subInput, subOutput]
+// MockPubSubMockRecorder is the mock recorder for MockPubSub.
+type MockPubSubMockRecorder[pubInput any, pubOutput any, subInput any, subOutput any] struct {
+	mock *MockPubSub[pubInput, pubOutput, subInput, subOutput]
 }
 
-// NewMockpubSub creates a new mock instance.
-func NewMockpubSub[pubInput any, pubOutput any, subInput any, subOutput any](ctrl *gomock.Controller) *MockpubSub[pubInput, pubOutput, subInput, subOutput] {
-	mock := &MockpubSub[pubInput, pubOutput, subInput, subOutput]{ctrl: ctrl}
-	mock.recorder = &MockpubSubMockRecorder[pubInput, pubOutput, subInput, subOutput]{mock}
+// NewMockPubSub creates a new mock instance.
+func NewMockPubSub[pubInput any, pubOutput any, subInput any, subOutput any](ctrl *gomock.Controller) *MockPubSub[pubInput, pubOutput, subInput, subOutput] {
+	mock := &MockPubSub[pubInput, pubOutput, subInput, subOutput]{ctrl: ctrl}
+	mock.recorder = &MockPubSubMockRecorder[pubInput, pubOutput, subInput, subOutput]{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockpubSub[pubInput, pubOutput, subInput, subOutput]) EXPECT() *MockpubSubMockRecorder[pubInput, pubOutput, subInput, subOutput] {
+func (m *MockPubSub[pubInput, pubOutput, subInput, subOutput]) EXPECT() *MockPubSubMockRecorder[pubInput, pubOutput, subInput, subOutput] {
 	return m.recorder
 }
 
 // Publish mocks base method.
-func (m *MockpubSub[pubInput, pubOutput, subInput, subOutput]) Publish(ctx context.Context, input pubInput) (pubOutput, error) {
+func (m *MockPubSub[pubInput, pubOutput, subInput, subOutput]) Publish(ctx context.Context, input pubInput) (pubOutput, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Publish", ctx, input)
 	ret0, _ := ret[0].(pubOutput)
@@ -48,13 +48,13 @@ func (m *MockpubSub[pubInput, pubOutput, subInput, subOutput]) Publish(ctx conte
 }
 
 // Publish indicates an expected call of Publish.
-func (mr *MockpubSubMockRecorder[pubInput, pubOutput, subInput, subOutput]) Publish(ctx, input any) *gomock.Call {
+func (mr *MockPubSubMockRecorder[pubInput, pubOutput, subInput, subOutput]) Publish(ctx, input any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Publish", reflect.TypeOf((*MockpubSub[pubInput, pubOutput, subInput, subOutput])(nil).Publish), ctx, input)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Publish", reflect.TypeOf((*MockPubSub[pubInput, pubOutput, subInput, subOutput])(nil).Publish), ctx, input)
 }
 
 // Subscribe mocks base method.
-func (m *MockpubSub[pubInput, pubOutput, subInput, subOutput]) Subscribe(ctx context.Context, input subInput) (subOutput, error) {
+func (m *MockPubSub[pubInput, pubOutput, subInput, subOutput]) Subscribe(ctx context.Context, input subInput) (subOutput, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Subscribe", ctx, input)
 	ret0, _ := ret[0].(subOutput)
@@ -63,7 +63,7 @@ func (m *MockpubSub[pubInput, pubOutput, subInput, subOutput]) Subscribe(ctx con
 }
 
 // Subscribe indicates an expected call of Subscribe.
-func (mr *MockpubSubMockRecorder[pubInput, pubOutput, subInput, subOutput]) Subscribe(ctx, input any) *gomock.Call {
+func (mr *MockPubSubMockRecorder[pubInput, pubOutput, subInput, subOutput]) Subscribe(ctx, input any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Subscribe", reflect.TypeOf((*MockpubSub[pubInput, pubOutput, subInput, subOutput])(nil).Subscribe), ctx, input)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Subscribe", reflect.TypeOf((*MockPubSub[pubInput, pubOutput, subInput, subOutput])(nil).Subscribe), ctx, input)
 }

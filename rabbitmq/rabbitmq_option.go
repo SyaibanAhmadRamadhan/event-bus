@@ -1,4 +1,4 @@
-package rabbitmq
+package erabbitmq
 
 import (
 	"github.com/guregu/null/v5"
