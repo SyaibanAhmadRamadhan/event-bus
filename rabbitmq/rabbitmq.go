@@ -1,6 +1,7 @@
 package erabbitmq
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	eventbus "github.com/SyaibanAhmadRamadhan/event-bus"
@@ -27,20 +28,21 @@ type rabbitMQ struct {
 	isClosed bool
 	mu       sync.Mutex
 	wg       sync.WaitGroup
-	config   *Config
+	cfg      *Config
 }
 
 func New(url string, opt ...Options) *rabbitMQ {
 	r := &rabbitMQ{
-		ch:       nil,
-		conn:     nil,
-		config:   &Config{},
-		isClosed: false,
-		wg:       sync.WaitGroup{},
+		cfg: &Config{},
 	}
 
 	for _, o := range opt {
-		o(r.config)
+		o(r.cfg)
+	}
+
+	if r.cfg.pubTracer == nil || r.cfg.reconTracer == nil {
+		o := WithOtel(url)
+		o(r.cfg)
 	}
 
 	err := r.connect(url)
@@ -48,7 +50,7 @@ func New(url string, opt ...Options) *rabbitMQ {
 		panic(err)
 	}
 
-	if r.config.reconnect != nil {
+	if r.cfg.reconnect != nil {
 		go r.reconnectUrl(url)
 	}
 	return r
@@ -68,7 +70,7 @@ func (r *rabbitMQ) Close() {
 
 	<-done
 	close(done)
-	close(r.config.reconnect)
+	close(r.cfg.reconnect)
 
 	if err := r.closeChannel(); err != nil {
 		log.Printf("Error closing channel: %v", err)
@@ -104,7 +106,7 @@ func (r *rabbitMQ) connect(url string) error {
 	defer r.mu.Unlock()
 
 	if r.isClosed {
-		return errClosedRabbitmq
+		return eventbus.Error(errClosedRabbitmq)
 	}
 
 	conn, err := amqp.Dial(url)
@@ -118,16 +120,13 @@ func (r *rabbitMQ) connect(url string) error {
 		return fmt.Errorf("cannot create channel: %v", err)
 	}
 
-	if r.config.confirmMode {
+	if r.cfg.confirmMode {
 		if err = ch.Confirm(false); err != nil {
 			conn.Close()
 			ch.Close()
 			return fmt.Errorf("cannot support confirm mode: %v", err)
 		}
 	}
-
-	r.closeConnection()
-	r.closeChannel()
 
 	r.ch = ch
 	r.conn = conn
@@ -136,9 +135,9 @@ func (r *rabbitMQ) connect(url string) error {
 }
 
 func (r *rabbitMQ) signalReconnect() {
-	if r.config.reconnect != nil {
+	if r.cfg.reconnect != nil {
 		select {
-		case r.config.reconnect <- struct{}{}:
+		case r.cfg.reconnect <- struct{}{}:
 		default:
 			break
 		}
@@ -148,42 +147,47 @@ func (r *rabbitMQ) signalReconnect() {
 func (r *rabbitMQ) reconnectUrl(url string) {
 	for {
 		select {
-		case _, ok := <-r.config.reconnect:
+		case _, ok := <-r.cfg.reconnect:
 			if !ok {
 				return
 			}
-			r.tryReconnect(url)
+			ctxOtel := r.cfg.reconTracer.TraceReConnStart(context.Background(), r.cfg.reconnectDelay,
+				r.cfg.maxRetryConnection.Ptr(),
+			)
+			r.tryReconnect(ctxOtel, url)
 		}
 	}
 }
 
-func (r *rabbitMQ) tryReconnect(url string) {
-	if r.config.maxRetryConnection.Valid {
-		for i := int64(1); i <= r.config.maxRetryConnection.Int64; i++ {
-			log.Printf("Attempt %d to reconnect...", i)
+func (r *rabbitMQ) tryReconnect(ctx context.Context, url string) {
+	r.closeConnection()
+	r.closeChannel()
+	if r.cfg.maxRetryConnection.Valid {
+		for i := int64(1); i <= r.cfg.maxRetryConnection.Int64; i++ {
 			if err := r.connect(url); err != nil {
 				if errors.Is(err, errClosedRabbitmq) {
+					r.cfg.reconTracer.TraceReConnEnd(ctx, err)
 					return
 				}
-				log.Printf("Reconnection attempt %d failed: %v", i, err)
-				time.Sleep(r.config.reconnectDelay)
+				r.cfg.reconTracer.RecordRetryReConn(ctx, i, err)
+				time.Sleep(r.cfg.reconnectDelay)
 			} else {
-				log.Println("Reconnection successful")
+				r.cfg.reconTracer.TraceReConnEnd(ctx, nil)
 				return
 			}
 		}
-		log.Println("Max reconnection attempts reached, giving up")
+		r.cfg.reconTracer.TraceReConnEnd(ctx, errors.New("max reconnection attempts reached, giving up"))
 	} else {
 		for attempt := int64(1); ; attempt++ {
-			log.Printf("Attempt %d to reconnect...", attempt)
 			if err := r.connect(url); err != nil {
 				if errors.Is(err, errClosedRabbitmq) {
+					r.cfg.reconTracer.TraceReConnEnd(ctx, err)
 					return
 				}
-				log.Printf("Reconnection attempt %d failed: %v", attempt, err)
-				time.Sleep(r.config.reconnectDelay)
+				r.cfg.reconTracer.RecordRetryReConn(ctx, attempt, err)
+				time.Sleep(r.cfg.reconnectDelay)
 			} else {
-				log.Println("Reconnection successful")
+				r.cfg.reconTracer.TraceReConnEnd(ctx, nil)
 				return
 			}
 		}

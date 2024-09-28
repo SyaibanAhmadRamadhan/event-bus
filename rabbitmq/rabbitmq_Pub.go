@@ -2,23 +2,12 @@ package erabbitmq
 
 import (
 	"context"
-	"fmt"
+	eventbus "github.com/SyaibanAhmadRamadhan/event-bus"
 	"github.com/google/uuid"
-	eventbus "go-event-bus"
-	"log"
 	"time"
 )
 
 func (r *rabbitMQ) Publish(ctx context.Context, input PubInput) (output PubOutput, err error) {
-	if r.isClosed {
-		return output, eventbus.Error(ErrProcessShutdownIsRunning)
-	}
-
-	r.wg.Add(1)
-	defer r.wg.Done()
-
-	time.Sleep(5 * time.Second)
-
 	if input.Msg.MessageId == "" {
 		input.Msg.MessageId = uuid.New().String()
 	}
@@ -27,10 +16,23 @@ func (r *rabbitMQ) Publish(ctx context.Context, input PubInput) (output PubOutpu
 		input.Msg.CorrelationId = uuid.New().String()
 	}
 
-	return r.retryPublish(ctx, input)
+	ctxOtel := r.cfg.pubTracer.TracePubStart(ctx, input)
+
+	if r.isClosed {
+		err = eventbus.Error(ErrProcessShutdownIsRunning)
+		r.cfg.pubTracer.TracePubEnd(ctxOtel, output, err)
+		return
+	}
+
+	r.wg.Add(1)
+	defer r.wg.Done()
+
+	output, err = r.retryPublish(ctx, ctxOtel, input)
+	r.cfg.pubTracer.TracePubEnd(ctxOtel, output, err)
+	return
 }
 
-func (r *rabbitMQ) retryPublish(ctx context.Context, input PubInput) (output PubOutput, err error) {
+func (r *rabbitMQ) retryPublish(ctx context.Context, ctxOtel context.Context, input PubInput) (output PubOutput, err error) {
 	for attempts := 0; attempts < input.MaxRetry; attempts++ {
 		err = r.publish(ctx, input, &output)
 		if err == nil {
@@ -40,11 +42,12 @@ func (r *rabbitMQ) retryPublish(ctx context.Context, input PubInput) (output Pub
 		if r.isClosed {
 			return output, eventbus.Error(ErrProcessShutdownIsRunning)
 		}
+
 		select {
 		case <-ctx.Done():
 			return output, eventbus.Error(ctx.Err())
 		default:
-			log.Printf("publish error: %v, attempting reconnection (%d/%d)", err, attempts+1, input.MaxRetry)
+			r.cfg.pubTracer.RecordRetryPub(ctxOtel, attempts+1, err)
 			r.signalReconnect()
 			time.Sleep(input.DelayRetry)
 		}
@@ -58,7 +61,6 @@ func (r *rabbitMQ) retryPublish(ctx context.Context, input PubInput) (output Pub
 func (r *rabbitMQ) publish(_ context.Context, input PubInput, output *PubOutput) error {
 	deferredConfirm, err := r.ch.PublishWithDeferredConfirm(input.ExchangeName, input.RoutingKey, input.Mandatory, input.Immediate, input.Msg)
 	if err != nil {
-		fmt.Println(err)
 		return eventbus.Error(err)
 	}
 

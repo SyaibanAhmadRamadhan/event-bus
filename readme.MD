@@ -11,6 +11,7 @@
 - **Thread-safe**: Implements mutexes to secure access to shared resources.
 - **Dynamic Interface Handling**: Uses Go's generics to allow dynamic message types, reducing code duplication while still depending on a single defined object type.
 - **OpenTelemetry Integration**: Optionally use OpenTelemetry for observability and tracing within the messaging operations.
+- **Customizable Tracing**: Enable or disable tracing as needed, giving you full control over what to trace.
 
 [//]: # (## Installation)
 

@@ -8,7 +8,7 @@ package erabbitmq
 //	go func() {
 //		<-c
 //		log.Printf("close handler: Ctrl+C pressed in Terminal")
-//		close(r.config.exitCh)
+//		close(r.cfg.exitCh)
 //	}()
 //}
 //
@@ -20,7 +20,7 @@ package erabbitmq
 //		})
 //		for {
 //			select {
-//			case <-r.config.exitCh:
+//			case <-r.cfg.exitCh:
 //				exitConfirmHandler(confirms)
 //				return
 //			default:
@@ -28,9 +28,9 @@ package erabbitmq
 //			}
 //
 //			countConfirmation := len(confirms)
-//			if countConfirmation <= r.config.maxShelterConfirmation {
+//			if countConfirmation <= r.cfg.maxShelterConfirmation {
 //				select {
-//				case r.config.publishOkCh <- struct{}{}:
+//				case r.cfg.publishOkCh <- struct{}{}:
 //					log.Println("permission ok to publish")
 //				case <-time.After(5 * time.Second):
 //					log.Println("confirm handler: timeout indicating OK to publish (this should never happen!)")
@@ -41,10 +41,10 @@ package erabbitmq
 //			}
 //
 //			select {
-//			case confirmation := <-r.config.confirmsCh:
+//			case confirmation := <-r.cfg.confirmsCh:
 //				deliveryTag := confirmation.deliveredConfirmation.DeliveryTag
 //				confirms[deliveryTag] = confirmation
-//			case <-r.config.exitCh:
+//			case <-r.cfg.exitCh:
 //				exitConfirmHandler(confirms)
 //				return
 //			}

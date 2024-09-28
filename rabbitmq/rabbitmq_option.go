@@ -2,6 +2,7 @@ package erabbitmq
 
 import (
 	"github.com/guregu/null/v5"
+	amqp "github.com/rabbitmq/amqp091-go"
 	"time"
 )
 
@@ -11,6 +12,9 @@ type Config struct {
 	maxRetryConnection null.Int
 
 	confirmMode bool
+
+	pubTracer   TracerPub
+	reconTracer TracerReconnection
 }
 
 type Options func(cfg *Config)
@@ -29,17 +33,14 @@ func WithConfirmMode(b bool) Options {
 	}
 }
 
-//
-//func WithConfirmMode() Options {
-//	return func(cfg *Config) {
-//		cfg.confirmMode = true
-//		cfg.confirmsCh = make(chan struct {
-//			deliveredConfirmation *amqp.DeferredConfirmation
-//			message               amqp.Publishing
-//		})
-//		cfg.exitCh = make(chan struct{})
-//		cfg.confirmsDoneCh = make(chan struct{})
-//		cfg.publishOkCh = make(chan struct{}, 1)
-//		cfg.maxShelterConfirmation = 8
-//	}
-//}
+func WithOtel(url string) Options {
+	return func(cfg *Config) {
+		uri, err := amqp.ParseURI(url)
+		if err != nil {
+			panic(err)
+		}
+		o := NewOtel(uri)
+		cfg.pubTracer = o
+		cfg.reconTracer = o
+	}
+}
