@@ -8,3 +8,5 @@ require (
 	github.com/rabbitmq/amqp091-go v1.10.0
 	go.uber.org/mock v0.4.0
 )
+
+require github.com/SyaibanAhmadRamadhan/event-bus v0.0.0-20240928065509-5e83fe02d03d

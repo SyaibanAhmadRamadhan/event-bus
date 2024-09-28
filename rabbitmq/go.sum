@@ -1,3 +1,5 @@
+github.com/SyaibanAhmadRamadhan/event-bus v0.0.0-20240928065509-5e83fe02d03d h1:zB+iftZZQYZEAZBsNfZmDMBvwSLN77an9ZxF7+oYhR0=
+github.com/SyaibanAhmadRamadhan/event-bus v0.0.0-20240928065509-5e83fe02d03d/go.mod h1:iqOhY5Fl9CritAjbE29IE4oVHWkHd8UC3WCChINb6xo=
 github.com/google/uuid v1.6.0 h1:NIvaJDMOsjHA8n1jAhLSgzrAzy1Hgr+hNrb57e+94F0=
 github.com/google/uuid v1.6.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
 github.com/guregu/null/v5 v5.0.0 h1:PRxjqyOekS11W+w/7Vfz6jgJE/BCwELWtgvOJzddimw=
