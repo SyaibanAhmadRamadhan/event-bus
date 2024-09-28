@@ -9,4 +9,4 @@ require (
 	go.uber.org/mock v0.4.0
 )
 
-require github.com/SyaibanAhmadRamadhan/event-bus v0.0.0-20240928065509-5e83fe02d03d
+require github.com/SyaibanAhmadRamadhan/event-bus v0.0.0-20240928065655-8ffaf07cf8be
