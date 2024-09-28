@@ -1,4 +1,4 @@
-module go-event-bus
+module github.com/SyaibanAhmadRamadhan/event-bus
 
 go 1.22
 

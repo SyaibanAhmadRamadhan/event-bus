@@ -3,8 +3,8 @@ package erabbitmq
 import (
 	"errors"
 	"fmt"
+	eventbus "github.com/SyaibanAhmadRamadhan/event-bus"
 	amqp "github.com/rabbitmq/amqp091-go"
-	eventbus "go-event-bus"
 	"go.uber.org/mock/gomock"
 	"log"
 	"sync"
