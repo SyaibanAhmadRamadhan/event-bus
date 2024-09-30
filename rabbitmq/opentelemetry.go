@@ -105,6 +105,8 @@ func (r *opentelemetry) TracePubStart(ctx context.Context, input PubInput) conte
 	}
 
 	ctx, _ = r.tracer.Start(ctx, nameWhenPublish(input.ExchangeName), opts...)
+	carrier := newPublishingMessageCarrier(&input.Msg)
+	r.propagators.Inject(ctx, carrier)
 	return ctx
 }
 
@@ -182,6 +184,9 @@ func (r *opentelemetry) RecordRetryReConn(ctx context.Context, attempt int64, er
 }
 
 func (r *opentelemetry) TraceSubStart(ctx context.Context, input SubInput, msg *amqp.Delivery, ch *amqp.Channel) {
+	carrier := newDeliveryMessageCarrier(msg)
+	parentCtx := r.propagators.Extract(context.Background(), carrier)
+
 	attrs := []attribute.KeyValue{
 		semconv.MessagingOperationTypeDeliver,
 		semconv.MessagingOperationName("process"),
@@ -211,7 +216,7 @@ func (r *opentelemetry) TraceSubStart(ctx context.Context, input SubInput, msg *
 		trace.WithSpanKind(trace.SpanKindConsumer),
 	}
 
-	_, span := r.tracer.Start(ctx,
+	_, span := r.tracer.Start(parentCtx,
 		nameWhenConsume(input.QueueName), opts...)
 	msg.Acknowledger = &otelAck{
 		otel:  r,

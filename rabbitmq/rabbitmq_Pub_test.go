@@ -26,7 +26,7 @@ func TestName(t *testing.T) {
 }
 
 func main() {
-	NewOtel()
+	NewOtel("pub")
 	time.Sleep(2 * time.Second)
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
@@ -48,6 +48,9 @@ func main() {
 			DelayRetry:   time.Second * 2,
 			Msg: amqp.Publishing{
 				Body: []byte("msg"),
+				Headers: amqp.Table{
+					"corre": "123",
+				},
 			},
 		})
 		if err != nil {
@@ -99,7 +102,7 @@ func main() {
 	time.Sleep(30 * time.Hour)
 }
 
-func NewOtel() {
+func NewOtel(tracerName string) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -119,7 +122,7 @@ func NewOtel() {
 	}
 
 	otelProvider := &otelProvider{
-		name: "test",
+		name: tracerName,
 	}
 
 	traceProvide, err := otelProvider.start(traceExp)

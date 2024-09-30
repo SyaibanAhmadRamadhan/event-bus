@@ -10,7 +10,7 @@ import (
 )
 
 func TestSub(t *testing.T) {
-	NewOtel()
+	NewOtel("sub")
 	time.Sleep(2 * time.Second)
 
 	r := erabbitmq.New("amqp://rabbitmq:pas12345@localhost:5672/", erabbitmq.WithReconnect(time.Second, null.Int{}), erabbitmq.WithOtel("amqp://rabbitmq:pas12345@localhost:5672/"))
