@@ -18,7 +18,7 @@ func (r *rabbitMQ) Publish(ctx context.Context, input PubInput) (output PubOutpu
 
 	var ctxOtel context.Context
 	if r.cfg.pubTracer != nil {
-		ctxOtel = r.cfg.pubTracer.TracePubStart(ctx, input)
+		ctxOtel = r.cfg.pubTracer.TracePubStart(ctx, input, &input.Msg)
 	}
 
 	if r.isClosed {

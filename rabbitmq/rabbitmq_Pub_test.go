@@ -48,9 +48,9 @@ func main() {
 			DelayRetry:   time.Second * 2,
 			Msg: amqp.Publishing{
 				Body: []byte("msg"),
-				Headers: amqp.Table{
-					"corre": "123",
-				},
+				//Headers: amqp.Table{
+				//	"corre": "123",
+				//},
 			},
 		})
 		if err != nil {

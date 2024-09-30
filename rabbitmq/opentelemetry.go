@@ -81,7 +81,7 @@ func (r *opentelemetry) RecordRetryPub(ctx context.Context, attempt int, err err
 	span.AddEvent(fmt.Sprintf("Retry Publish attempt %d", attempt), trace.WithAttributes(attrs...))
 }
 
-func (r *opentelemetry) TracePubStart(ctx context.Context, input PubInput) context.Context {
+func (r *opentelemetry) TracePubStart(ctx context.Context, input PubInput, msg *amqp.Publishing) context.Context {
 	attrs := []attribute.KeyValue{
 		semconv.MessagingRabbitmqDestinationRoutingKey(input.RoutingKey),
 		semconv.MessagingOperationTypePublish,
@@ -105,7 +105,7 @@ func (r *opentelemetry) TracePubStart(ctx context.Context, input PubInput) conte
 	}
 
 	ctx, _ = r.tracer.Start(ctx, nameWhenPublish(input.ExchangeName), opts...)
-	carrier := newPublishingMessageCarrier(&input.Msg)
+	carrier := newPublishingMessageCarrier(msg)
 	r.propagators.Inject(ctx, carrier)
 	return ctx
 }

@@ -8,7 +8,7 @@ import (
 )
 
 type TracerPub interface {
-	TracePubStart(ctx context.Context, input PubInput) context.Context
+	TracePubStart(ctx context.Context, input PubInput, msg *amqp.Publishing) context.Context
 	TracePubEnd(ctx context.Context, input PubOutput, err error)
 	RecordRetryPub(ctx context.Context, attempt int, err error)
 }
