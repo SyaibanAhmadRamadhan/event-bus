@@ -19,7 +19,7 @@
 To install `go-event-bus`, you can use Go Modules by running the following command:
 
 ```bash
-go get github.com/username/go-event-bus/rabbitmq@1.240930.0352
+go get github.com/username/go-event-bus/rabbitmq@1.240930.2144
 ```
 
 ## Contributions 

@@ -65,7 +65,10 @@ func (r *rabbitMQ) Close() {
 
 	<-done
 	close(done)
-	close(r.cfg.reconnect)
+
+	if r.cfg.reconnect != nil {
+		close(r.cfg.reconnect)
+	}
 
 	if err := r.closeChannel(); err != nil {
 		log.Printf("Error closing channel: %v", err)

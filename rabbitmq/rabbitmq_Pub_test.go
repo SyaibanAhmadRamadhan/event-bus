@@ -59,6 +59,10 @@ func main() {
 			successCount++
 			fmt.Println("send msg: ", "msg")
 		}
+		select {
+		case <-output.Confirmation.Done():
+			fmt.Println(output.Confirmation.Acked())
+		}
 		log.Println(output)
 	}()
 
