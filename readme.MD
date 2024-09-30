@@ -13,15 +13,14 @@
 - **OpenTelemetry Integration**: Optionally use OpenTelemetry for observability and tracing within the messaging operations.
 - **Customizable Tracing**: Enable or disable tracing as needed, giving you full control over what to trace.
 
-[//]: # (## Installation)
+## Installation
 
-[//]: # ()
-[//]: # (To install `go-event-bus`, you can use Go Modules by running the following command:)
 
-[//]: # ()
-[//]: # ([//]: # &#40;```bash&#41;)
-[//]: # ()
-[//]: # ([//]: # &#40;go get github.com/username/go-event-bus&#41;)
+To install `go-event-bus`, you can use Go Modules by running the following command:
+
+```bash
+go get github.com/username/go-event-bus/rabbitmq@1.240930.1134
+```
 
 ## Contributions 
 from the community are welcome! If you have suggestions, enhancements, or bug reports, please open an issue or submit a pull request in our GitHub repository.
