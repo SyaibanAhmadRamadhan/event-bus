@@ -87,8 +87,6 @@ func (r *opentelemetry) TracePubStart(ctx context.Context, input PubInput) conte
 		semconv.MessagingOperationTypePublish,
 		semconv.MessagingOperationName("publish"),
 		semconv.MessagingMessageBodySize(len(input.Msg.Body)),
-		semconv.MessagingMessageConversationID(input.Msg.CorrelationId),
-		semconv.MessagingMessageID(input.Msg.MessageId),
 		semconv.MessagingDestinationPublishAnonymous(input.ExchangeName == ""),
 		semconv.MessagingDestinationPublishName(input.ExchangeName),
 		attribute.Int("messaging.message.max-retry", input.MaxRetry),
@@ -103,7 +101,7 @@ func (r *opentelemetry) TracePubStart(ctx context.Context, input PubInput) conte
 	attrs = append(attrs, r.attrs...)
 	opts := []trace.SpanStartOption{
 		trace.WithAttributes(attrs...),
-		trace.WithSpanKind(trace.SpanKindConsumer),
+		trace.WithSpanKind(trace.SpanKindProducer),
 	}
 
 	ctx, _ = r.tracer.Start(ctx, nameWhenPublish(input.ExchangeName), opts...)
@@ -137,7 +135,7 @@ func (r *opentelemetry) TraceReConnStart(ctx context.Context, reconDelay time.Du
 	attrs = append(attrs, r.attrs...)
 	opts := []trace.SpanStartOption{
 		trace.WithAttributes(attrs...),
-		trace.WithSpanKind(trace.SpanKindConsumer),
+		trace.WithSpanKind(trace.SpanKindServer),
 	}
 
 	ctx, _ = r.tracer.Start(ctx, "rabbitmq-reconnection", opts...)
