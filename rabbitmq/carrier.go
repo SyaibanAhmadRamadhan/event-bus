@@ -15,8 +15,8 @@ type publishingMessageCarrier struct {
 	msg *amqp091.Publishing
 }
 
-// newPublishingMessageCarrier creates a new publishingMessageCarrier.
-func newPublishingMessageCarrier(msg *amqp091.Publishing) publishingMessageCarrier {
+// NewPublishingMessageCarrier creates a new publishingMessageCarrier.
+func NewPublishingMessageCarrier(msg *amqp091.Publishing) publishingMessageCarrier {
 	return publishingMessageCarrier{msg: msg}
 }
 
@@ -55,8 +55,8 @@ type deliveryMessageCarrier struct {
 	msg *amqp091.Delivery
 }
 
-// newDeliveryMessageCarrier creates a new deliveryMessageCarrier.
-func newDeliveryMessageCarrier(msg *amqp091.Delivery) deliveryMessageCarrier {
+// NewDeliveryMessageCarrier creates a new deliveryMessageCarrier.
+func NewDeliveryMessageCarrier(msg *amqp091.Delivery) deliveryMessageCarrier {
 	return deliveryMessageCarrier{msg: msg}
 }
 

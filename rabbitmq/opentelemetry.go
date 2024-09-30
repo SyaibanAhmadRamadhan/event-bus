@@ -105,7 +105,7 @@ func (r *opentelemetry) TracePubStart(ctx context.Context, input PubInput, msg *
 	}
 
 	ctx, _ = r.tracer.Start(ctx, nameWhenPublish(input.ExchangeName), opts...)
-	carrier := newPublishingMessageCarrier(msg)
+	carrier := NewPublishingMessageCarrier(msg)
 	r.propagators.Inject(ctx, carrier)
 	return ctx
 }
@@ -184,7 +184,7 @@ func (r *opentelemetry) RecordRetryReConn(ctx context.Context, attempt int64, er
 }
 
 func (r *opentelemetry) TraceSubStart(ctx context.Context, input SubInput, msg *amqp.Delivery, ch *amqp.Channel) {
-	carrier := newDeliveryMessageCarrier(msg)
+	carrier := NewDeliveryMessageCarrier(msg)
 	parentCtx := r.propagators.Extract(context.Background(), carrier)
 
 	attrs := []attribute.KeyValue{
