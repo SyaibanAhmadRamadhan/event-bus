@@ -10,7 +10,7 @@ require (
 )
 
 require (
-	github.com/SyaibanAhmadRamadhan/event-bus v0.0.0-20240928065655-8ffaf07cf8be
+	github.com/SyaibanAhmadRamadhan/event-bus v1.240930.2158
 	go.opentelemetry.io/otel v1.30.0
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.30.0
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc v1.30.0

@@ -1,5 +1,9 @@
 github.com/SyaibanAhmadRamadhan/event-bus v0.0.0-20240928065655-8ffaf07cf8be h1:UAnOSaXkxXT0YjilGyiLBAn3YMHMYzbSnPXgEGZJbNE=
 github.com/SyaibanAhmadRamadhan/event-bus v0.0.0-20240928065655-8ffaf07cf8be/go.mod h1:zXKY28mictpD9fWnauLpt5YIvlGe/QxP027QzCMJePw=
+github.com/SyaibanAhmadRamadhan/event-bus v0.0.0-20240930144532-9f48618a8cae h1:0utRPoB3+svrRXsY6FwlJLDV+6fmWOkFFUtXmG47kaY=
+github.com/SyaibanAhmadRamadhan/event-bus v0.0.0-20240930144532-9f48618a8cae/go.mod h1:zXKY28mictpD9fWnauLpt5YIvlGe/QxP027QzCMJePw=
+github.com/SyaibanAhmadRamadhan/event-bus v1.240930.2158 h1:HZmtx0it8DHaoVq2gojKvh+BWNE/RT7d9W6D0JsRBHs=
+github.com/SyaibanAhmadRamadhan/event-bus v1.240930.2158/go.mod h1:zXKY28mictpD9fWnauLpt5YIvlGe/QxP027QzCMJePw=
 github.com/cenkalti/backoff/v4 v4.3.0 h1:MyRJ/UdXutAwSAT+s3wNd7MfTIcy71VQueUuFK343L8=
 github.com/cenkalti/backoff/v4 v4.3.0/go.mod h1:Y3VNntkOUPxTVeUxJ/G5vcM//AlwfmyYozVcomhLiZE=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
