@@ -2,6 +2,7 @@ package erabbitmq
 
 import (
 	"context"
+	amqp "github.com/rabbitmq/amqp091-go"
 	"runtime/debug"
 	"time"
 )
@@ -12,10 +13,17 @@ type TracerPub interface {
 	RecordRetryPub(ctx context.Context, attempt int, err error)
 }
 
+type TracerSub interface {
+	TraceSubStart(ctx context.Context, input SubInput, msg *amqp.Delivery, ch *amqp.Channel)
+}
 type TracerReconnection interface {
 	TraceReConnStart(ctx context.Context, reconDelay time.Duration, attempt *int64) context.Context
 	TraceReConnEnd(ctx context.Context, err error)
 	RecordRetryReConn(ctx context.Context, attempt int64, err error)
+}
+
+type TracerCleanUpSpan interface {
+	EndAllSpan()
 }
 
 func findOwnImportedVersion() {

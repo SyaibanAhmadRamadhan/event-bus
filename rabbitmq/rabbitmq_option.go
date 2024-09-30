@@ -13,8 +13,10 @@ type Config struct {
 
 	confirmMode bool
 
-	pubTracer   TracerPub
-	reconTracer TracerReconnection
+	pubTracer         TracerPub
+	reconTracer       TracerReconnection
+	subTracer         TracerSub
+	cleanUpSpanTracer TracerCleanUpSpan
 }
 
 type Options func(cfg *Config)
@@ -42,5 +44,7 @@ func WithOtel(url string) Options {
 		o := NewOtel(uri)
 		cfg.pubTracer = o
 		cfg.reconTracer = o
+		cfg.subTracer = o
+		cfg.cleanUpSpanTracer = o
 	}
 }

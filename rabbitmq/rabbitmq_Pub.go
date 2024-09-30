@@ -16,11 +16,16 @@ func (r *rabbitMQ) Publish(ctx context.Context, input PubInput) (output PubOutpu
 		input.Msg.CorrelationId = uuid.New().String()
 	}
 
-	ctxOtel := r.cfg.pubTracer.TracePubStart(ctx, input)
+	var ctxOtel context.Context
+	if r.cfg.pubTracer != nil {
+		ctxOtel = r.cfg.pubTracer.TracePubStart(ctx, input)
+	}
 
 	if r.isClosed {
 		err = eventbus.Error(ErrProcessShutdownIsRunning)
-		r.cfg.pubTracer.TracePubEnd(ctxOtel, output, err)
+		if r.cfg.pubTracer != nil {
+			r.cfg.pubTracer.TracePubEnd(ctxOtel, output, err)
+		}
 		return
 	}
 
@@ -28,7 +33,9 @@ func (r *rabbitMQ) Publish(ctx context.Context, input PubInput) (output PubOutpu
 	defer r.wg.Done()
 
 	output, err = r.retryPublish(ctx, ctxOtel, input)
-	r.cfg.pubTracer.TracePubEnd(ctxOtel, output, err)
+	if r.cfg.pubTracer != nil {
+		r.cfg.pubTracer.TracePubEnd(ctxOtel, output, err)
+	}
 	return
 }
 
@@ -47,7 +54,9 @@ func (r *rabbitMQ) retryPublish(ctx context.Context, ctxOtel context.Context, in
 		case <-ctx.Done():
 			return output, eventbus.Error(ctx.Err())
 		default:
-			r.cfg.pubTracer.RecordRetryPub(ctxOtel, attempts+1, err)
+			if r.cfg.pubTracer != nil {
+				r.cfg.pubTracer.RecordRetryPub(ctxOtel, attempts+1, err)
+			}
 			r.signalReconnect()
 			time.Sleep(input.DelayRetry)
 		}

@@ -11,6 +11,7 @@ import (
 	semconv "go.opentelemetry.io/otel/semconv/v1.26.0"
 	"go.opentelemetry.io/otel/trace"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -18,6 +19,11 @@ type opentelemetry struct {
 	tracer      trace.Tracer
 	propagators propagation.TextMapPropagator
 	attrs       []attribute.KeyValue
+
+	// When ack multiple, we need to end spans of every delivery before the tag,
+	// so we keep a map of every span that haven't ended.
+	spanMap map[uint64]trace.Span
+	m       sync.Mutex
 }
 
 func nameWhenPublish(exchange string) string {
@@ -54,6 +60,7 @@ func NewOtel(uri amqp.URI) *opentelemetry {
 			semconv.ServerAddress(uri.Host),
 			semconv.ServerPort(uri.Port),
 		},
+		spanMap: make(map[uint64]trace.Span),
 	}
 }
 
@@ -174,4 +181,57 @@ func (r *opentelemetry) RecordRetryReConn(ctx context.Context, attempt int64, er
 	}
 
 	span.AddEvent(fmt.Sprintf("Reconnect attempt %d", attempt), trace.WithAttributes(attrs...))
+}
+
+func (r *opentelemetry) TraceSubStart(ctx context.Context, input SubInput, msg *amqp.Delivery, ch *amqp.Channel) {
+	attrs := []attribute.KeyValue{
+		semconv.MessagingOperationTypeDeliver,
+		semconv.MessagingOperationName("process"),
+		semconv.MessagingDestinationAnonymous(queueAnonymous(input.QueueName)),
+		semconv.MessagingDestinationName(input.QueueName),
+		semconv.MessagingDestinationPublishAnonymous(msg.Exchange == ""),
+		semconv.MessagingDestinationPublishName(msg.Exchange),
+		// todo messaging.client.id
+		semconv.MessagingRabbitmqDestinationRoutingKey(msg.RoutingKey),
+	}
+	if msg.MessageCount != 0 {
+		attrs = append(attrs, semconv.MessagingBatchMessageCount(int(msg.MessageCount)))
+	}
+	if msg.CorrelationId != "" {
+		attrs = append(attrs, semconv.MessagingMessageConversationID(msg.CorrelationId))
+	}
+	if msg.MessageId != "" {
+		attrs = append(attrs, semconv.MessagingMessageID(msg.MessageId))
+	}
+	if msg.DeliveryTag != 0 {
+		//nolint:gosec // overflow here is relatively safe and unlikely to happen
+		attrs = append(attrs, semconv.MessagingRabbitmqMessageDeliveryTag(int(msg.DeliveryTag)))
+	}
+	attrs = append(attrs, r.attrs...)
+	opts := []trace.SpanStartOption{
+		trace.WithAttributes(attrs...),
+		trace.WithSpanKind(trace.SpanKindConsumer),
+	}
+
+	_, span := r.tracer.Start(ctx,
+		nameWhenConsume(input.QueueName), opts...)
+	msg.Acknowledger = &otelAck{
+		otel:  r,
+		acker: ch,
+		span:  span,
+	}
+
+	r.m.Lock()
+	defer r.m.Unlock()
+	r.spanMap[msg.DeliveryTag] = span
+}
+
+func (r *opentelemetry) EndAllSpan() {
+	r.m.Lock()
+	defer r.m.Unlock()
+
+	for k, span := range r.spanMap {
+		span.End()
+		delete(r.spanMap, k)
+	}
 }

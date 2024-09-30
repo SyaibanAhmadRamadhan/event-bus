@@ -40,11 +40,6 @@ func New(url string, opt ...Options) *rabbitMQ {
 		o(r.cfg)
 	}
 
-	if r.cfg.pubTracer == nil || r.cfg.reconTracer == nil {
-		o := WithOtel(url)
-		o(r.cfg)
-	}
-
 	err := r.connect(url)
 	if err != nil {
 		panic(err)
@@ -78,6 +73,10 @@ func (r *rabbitMQ) Close() {
 
 	if err := r.closeConnection(); err != nil {
 		log.Printf("Error closing connection: %v", err)
+	}
+
+	if r.cfg.cleanUpSpanTracer != nil {
+		r.cfg.cleanUpSpanTracer.EndAllSpan()
 	}
 }
 
@@ -151,9 +150,12 @@ func (r *rabbitMQ) reconnectUrl(url string) {
 			if !ok {
 				return
 			}
-			ctxOtel := r.cfg.reconTracer.TraceReConnStart(context.Background(), r.cfg.reconnectDelay,
-				r.cfg.maxRetryConnection.Ptr(),
-			)
+			var ctxOtel context.Context
+			if r.cfg.reconTracer != nil {
+				ctxOtel = r.cfg.reconTracer.TraceReConnStart(context.Background(), r.cfg.reconnectDelay,
+					r.cfg.maxRetryConnection.Ptr(),
+				)
+			}
 			r.tryReconnect(ctxOtel, url)
 		}
 	}
@@ -166,28 +168,42 @@ func (r *rabbitMQ) tryReconnect(ctx context.Context, url string) {
 		for i := int64(1); i <= r.cfg.maxRetryConnection.Int64; i++ {
 			if err := r.connect(url); err != nil {
 				if errors.Is(err, errClosedRabbitmq) {
-					r.cfg.reconTracer.TraceReConnEnd(ctx, err)
+					if r.cfg.reconTracer != nil {
+						r.cfg.reconTracer.TraceReConnEnd(ctx, err)
+					}
 					return
 				}
-				r.cfg.reconTracer.RecordRetryReConn(ctx, i, err)
+				if r.cfg.reconTracer != nil {
+					r.cfg.reconTracer.RecordRetryReConn(ctx, i, err)
+				}
 				time.Sleep(r.cfg.reconnectDelay)
 			} else {
-				r.cfg.reconTracer.TraceReConnEnd(ctx, nil)
+				if r.cfg.reconTracer != nil {
+					r.cfg.reconTracer.TraceReConnEnd(ctx, nil)
+				}
 				return
 			}
 		}
-		r.cfg.reconTracer.TraceReConnEnd(ctx, errors.New("max reconnection attempts reached, giving up"))
+		if r.cfg.reconTracer != nil {
+			r.cfg.reconTracer.TraceReConnEnd(ctx, errors.New("max reconnection attempts reached, giving up"))
+		}
 	} else {
 		for attempt := int64(1); ; attempt++ {
 			if err := r.connect(url); err != nil {
 				if errors.Is(err, errClosedRabbitmq) {
-					r.cfg.reconTracer.TraceReConnEnd(ctx, err)
+					if r.cfg.reconTracer != nil {
+						r.cfg.reconTracer.TraceReConnEnd(ctx, err)
+					}
 					return
 				}
-				r.cfg.reconTracer.RecordRetryReConn(ctx, attempt, err)
+				if r.cfg.reconTracer != nil {
+					r.cfg.reconTracer.RecordRetryReConn(ctx, attempt, err)
+				}
 				time.Sleep(r.cfg.reconnectDelay)
 			} else {
-				r.cfg.reconTracer.TraceReConnEnd(ctx, nil)
+				if r.cfg.reconTracer != nil {
+					r.cfg.reconTracer.TraceReConnEnd(ctx, nil)
+				}
 				return
 			}
 		}
