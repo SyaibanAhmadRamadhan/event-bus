@@ -10,6 +10,7 @@ import (
 	"go.opentelemetry.io/otel/propagation"
 	semconv "go.opentelemetry.io/otel/semconv/v1.26.0"
 	"go.opentelemetry.io/otel/trace"
+	"strconv"
 	"sync"
 )
 
@@ -41,8 +42,8 @@ func NewOtel() *opentelemetry {
 	}
 }
 
-func (r *opentelemetry) TracePubStart(ctx context.Context, msg kafka.Message) context.Context {
-	carrier := NewMsgCarrier(&msg)
+func (r *opentelemetry) TracePubStart(ctx context.Context, msg *kafka.Message) context.Context {
+	carrier := NewMsgCarrier(msg)
 	ctx = r.propagators.Extract(ctx, carrier)
 
 	attrs := []attribute.KeyValue{
@@ -60,6 +61,7 @@ func (r *opentelemetry) TracePubStart(ctx context.Context, msg kafka.Message) co
 
 	name := fmt.Sprintf("%s send", msg.Topic)
 	ctx, _ = r.tracer.Start(ctx, name, opts...)
+	r.propagators.Inject(ctx, carrier)
 	return ctx
 }
 
@@ -75,4 +77,95 @@ func (r *opentelemetry) TracePubEnd(ctx context.Context, input PubOutput, err er
 	}
 
 	span.End()
+}
+
+func (r *opentelemetry) TraceSubStart(ctx context.Context, groupID string, msg *kafka.Message) context.Context {
+	carrier := NewMsgCarrier(msg)
+	ctx = r.propagators.Extract(ctx, carrier)
+
+	attrs := []attribute.KeyValue{
+		semconv.MessagingKafkaMessageKey(string(msg.Key)),
+		semconv.MessagingDestinationName(msg.Topic),
+		semconv.MessagingOperationTypeReceive,
+		semconv.MessagingOperationName("poll"),
+		semconv.MessagingEventhubsConsumerGroup(groupID),
+		semconv.MessagingDestinationPartitionID(strconv.FormatInt(int64(msg.Partition), 10)),
+		semconv.MessagingMessageBodySize(len(msg.Value)),
+		semconv.MessagingKafkaMessageOffset(int(msg.Offset)),
+	}
+	attrs = append(attrs, r.attrs...)
+	opts := []trace.SpanStartOption{
+		trace.WithAttributes(attrs...),
+		trace.WithSpanKind(trace.SpanKindConsumer),
+	}
+
+	name := fmt.Sprintf("fetch from topic %s", msg.Topic)
+	ctx, _ = r.tracer.Start(ctx, name, opts...)
+	r.propagators.Inject(ctx, carrier)
+	return ctx
+}
+
+func (r *opentelemetry) TraceSubEnd(ctx context.Context, err error) {
+	span := trace.SpanFromContext(ctx)
+	if !span.IsRecording() {
+		return
+	}
+
+	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+	}
+
+	span.End()
+}
+
+func (r *opentelemetry) TraceCommitMessagesStart(ctx context.Context, groupID string, messages ...kafka.Message) []context.Context {
+	if messages == nil {
+		return make([]context.Context, 0)
+	}
+
+	contexts := make([]context.Context, 0)
+
+	for _, msg := range messages {
+		carrier := NewMsgCarrier(&msg)
+		ctx = r.propagators.Extract(ctx, carrier)
+
+		attrs := []attribute.KeyValue{
+			semconv.MessagingKafkaMessageKey(string(msg.Key)),
+			semconv.MessagingDestinationName(msg.Topic),
+			semconv.MessagingOperationTypeSettle,
+			semconv.MessagingOperationName("commit"),
+			semconv.MessagingEventhubsConsumerGroup(groupID),
+			semconv.MessagingDestinationPartitionID(strconv.FormatInt(int64(msg.Partition), 10)),
+			semconv.MessagingMessageBodySize(len(msg.Value)),
+			semconv.MessagingKafkaMessageOffset(int(msg.Offset)),
+		}
+		attrs = append(attrs, r.attrs...)
+		opts := []trace.SpanStartOption{
+			trace.WithAttributes(attrs...),
+			trace.WithSpanKind(trace.SpanKindConsumer),
+		}
+
+		name := fmt.Sprintf("commit from topic %s", msg.Topic)
+		ctx, _ = r.tracer.Start(ctx, name, opts...)
+		contexts = append(contexts, ctx)
+	}
+
+	return contexts
+}
+
+func (r *opentelemetry) TraceCommitMessagesEnd(ctx []context.Context, err error) {
+	for _, c := range ctx {
+		span := trace.SpanFromContext(c)
+		if !span.IsRecording() {
+			return
+		}
+
+		if err != nil {
+			span.RecordError(err)
+			span.SetStatus(codes.Error, err.Error())
+		}
+
+		span.End()
+	}
 }

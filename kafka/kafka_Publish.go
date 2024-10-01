@@ -11,8 +11,8 @@ func (b *broker) Publish(ctx context.Context, input PubInput) (output PubOutput,
 	}
 
 	var ctxTracer context.Context
-	if b.pubTracer != nil && len(input.Messages) == 1 {
-		ctxTracer = b.pubTracer.TracePubStart(ctx, input.Messages[0])
+	if b.pubTracer != nil {
+		ctxTracer = b.pubTracer.TracePubStart(ctx, &input.Messages[0])
 	}
 
 	err = b.kafkaWriter.WriteMessages(ctx, input.Messages...)

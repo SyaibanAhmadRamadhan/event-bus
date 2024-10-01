@@ -1,6 +1,8 @@
 package ekafka
 
-import "github.com/segmentio/kafka-go"
+import (
+	"github.com/segmentio/kafka-go"
+)
 
 type PubInput struct {
 	Messages []kafka.Message
@@ -8,6 +10,10 @@ type PubInput struct {
 
 type PubOutput struct{}
 
-type SubInput struct{}
+type SubInput struct {
+	Config kafka.ReaderConfig
+}
 
-type SubOutput struct{}
+type SubOutput struct {
+	Reader Reader
+}
