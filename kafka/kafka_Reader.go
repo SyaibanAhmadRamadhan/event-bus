@@ -6,37 +6,64 @@ import (
 	"github.com/segmentio/kafka-go"
 )
 
+type MarshalFunc func(any) ([]byte, error)
+type UnmarshalFunc func([]byte, any) error
+
 type Reader struct {
 	R            *kafka.Reader
 	subTracer    TracerSub
 	commitTracer TracerCommitMessage
 	groupID      string
+	marshal      MarshalFunc
+	unmarshal    UnmarshalFunc
 }
 
-func (r *Reader) FetchMessage(ctx context.Context) (kafka.Message, error) {
+func (r *Reader) FetchMessage(ctx context.Context, v any) (kafka.Message, error) {
 	msg, err := r.R.FetchMessage(ctx)
 	if err != nil {
 		return kafka.Message{}, eventbus.Error(err)
 	}
+	var ctxOtel context.Context
 	if r.subTracer != nil {
-		ctxOtel := r.subTracer.TraceSubStart(ctx, r.groupID, &msg)
+		ctxOtel = r.subTracer.TraceSubStart(ctx, r.groupID, &msg)
+	}
+
+	if v != nil {
+		err = r.unmarshal(msg.Value, v)
+		if err != nil {
+			err = eventbus.Error(err)
+		}
+	}
+
+	if r.subTracer != nil {
 		r.subTracer.TraceSubEnd(ctxOtel, err)
 	}
 
 	return msg, err
 }
 
-func (r *Reader) ReadMessage(ctx context.Context) (kafka.Message, error) {
+func (r *Reader) ReadMessage(ctx context.Context, v any) (kafka.Message, error) {
 	msg, err := r.R.ReadMessage(ctx)
 	if err != nil {
 		return kafka.Message{}, eventbus.Error(err)
 	}
 
+	var ctxOtel context.Context
+
 	if r.subTracer != nil {
-		ctxOtel := r.subTracer.TraceSubStart(ctx, r.groupID, &msg)
-		r.subTracer.TraceSubEnd(ctxOtel, err)
+		ctxOtel = r.subTracer.TraceSubStart(ctx, r.groupID, &msg)
 	}
 
+	if v != nil {
+		err = r.unmarshal(msg.Value, v)
+		if err != nil {
+			err = eventbus.Error(err)
+		}
+	}
+
+	if r.subTracer != nil {
+		r.subTracer.TraceSubEnd(ctxOtel, err)
+	}
 	return msg, err
 }
 

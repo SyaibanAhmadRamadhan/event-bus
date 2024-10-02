@@ -12,6 +12,9 @@ type PubOutput struct{}
 
 type SubInput struct {
 	Config kafka.ReaderConfig
+
+	// by default using json
+	Unmarshal UnmarshalFunc
 }
 
 type SubOutput struct {

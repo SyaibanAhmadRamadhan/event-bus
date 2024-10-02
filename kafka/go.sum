@@ -1,5 +1,5 @@
-github.com/SyaibanAhmadRamadhan/event-bus v0.0.0-20240930043520-b81a320cb837 h1:yOHdFwGNaIEHFr0yujxCZGTO7Uosd+KrXUNVhSdgS1U=
-github.com/SyaibanAhmadRamadhan/event-bus v0.0.0-20240930043520-b81a320cb837/go.mod h1:zXKY28mictpD9fWnauLpt5YIvlGe/QxP027QzCMJePw=
+github.com/SyaibanAhmadRamadhan/event-bus v1.240930.2159-0.20241002172816-de4ec361f301 h1:GzRg97oa6JqvCryEp/N6X46My27pMbeLWCH9pb59yb4=
+github.com/SyaibanAhmadRamadhan/event-bus v1.240930.2159-0.20241002172816-de4ec361f301/go.mod h1:ywhrb1NWwVEyCnd2gvP7QLEc5tOs3aFdCmyu//91zAs=
 github.com/cenkalti/backoff/v4 v4.3.0 h1:MyRJ/UdXutAwSAT+s3wNd7MfTIcy71VQueUuFK343L8=
 github.com/cenkalti/backoff/v4 v4.3.0/go.mod h1:Y3VNntkOUPxTVeUxJ/G5vcM//AlwfmyYozVcomhLiZE=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
@@ -16,6 +16,8 @@ github.com/google/uuid v1.6.0 h1:NIvaJDMOsjHA8n1jAhLSgzrAzy1Hgr+hNrb57e+94F0=
 github.com/google/uuid v1.6.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
 github.com/grpc-ecosystem/grpc-gateway/v2 v2.22.0 h1:asbCHRVmodnJTuQ3qamDwqVOIjwqUPTYmYuemVOx+Ys=
 github.com/grpc-ecosystem/grpc-gateway/v2 v2.22.0/go.mod h1:ggCgvZ2r7uOoQjOyu2Y1NhHmEPPzzuhWgcza5M1Ji1I=
+github.com/guregu/null/v5 v5.0.0 h1:PRxjqyOekS11W+w/7Vfz6jgJE/BCwELWtgvOJzddimw=
+github.com/guregu/null/v5 v5.0.0/go.mod h1:SjupzNy+sCPtwQTKWhUCqjhVCO69hpsl2QsZrWHjlwU=
 github.com/klauspost/compress v1.15.9 h1:wKRjX6JRtDdrE9qwa4b/Cip7ACOshUI4smpCQanqjSY=
 github.com/klauspost/compress v1.15.9/go.mod h1:PhcZ0MbTNciWF3rruxRgKxI5NkcHHrHUDtV4Yw2GlzU=
 github.com/pierrec/lz4/v4 v4.1.15 h1:MO0/ucJhngq7299dKLwIMtgTfbkoSPF6AoMYDd8Q4q0=

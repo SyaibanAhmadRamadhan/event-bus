@@ -4,7 +4,9 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
+	"github.com/SyaibanAhmadRamadhan/event-bus/debezium"
 	ekafka "github.com/SyaibanAhmadRamadhan/event-bus/kafka"
+	"github.com/guregu/null/v5"
 	"github.com/segmentio/kafka-go"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
@@ -17,6 +19,17 @@ import (
 	"testing"
 	"time"
 )
+
+type UserValue struct {
+	ID              int64     `json:"id"`
+	Email           string    `json:"email"`
+	Password        string    `json:"password"`
+	RegisterAs      int16     `json:"register_as"`
+	IsEmailVerified bool      `json:"is_email_verified"`
+	CreatedAt       int64     `json:"created_at"`
+	UpdatedAt       int64     `json:"updated_at"`
+	DeletedAt       null.Time `json:"deleted_at"`
+}
 
 func TestName(t *testing.T) {
 	NewOtel("testing pub sub kafka")
@@ -63,13 +76,15 @@ func TestName(t *testing.T) {
 
 	msgs := make([]kafka.Message, 0)
 	for {
-		msg, err := r.Reader.FetchMessage(context.Background())
+		msgStruct := debezium.Envelope[UserValue, UserValue]{}
+		msg, err := r.Reader.FetchMessage(context.Background(), &msgStruct)
 		if err != nil {
 			t.Log(err)
 		}
 
-		fmt.Println(string(msg.Value))
-		fmt.Println(msg.Headers)
+		fmt.Println(msgStruct.Payload.Op)
+		fmt.Println(msgStruct.Payload.Before.Ptr())
+
 		msgs = append(msgs, msg)
 		if len(msgs) > 1 {
 			err = r.Reader.CommitMessages(context.Background(), msgs...)

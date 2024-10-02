@@ -3,7 +3,8 @@ module github.com/SyaibanAhmadRamadhan/event-bus/kafka
 go 1.22.5
 
 require (
-	github.com/SyaibanAhmadRamadhan/event-bus v0.0.0-20240930043520-b81a320cb837
+	github.com/SyaibanAhmadRamadhan/event-bus v1.240930.2159-0.20241002172816-de4ec361f301
+	github.com/guregu/null/v5 v5.0.0
 	github.com/segmentio/kafka-go v0.4.47
 	go.opentelemetry.io/otel v1.30.0
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.30.0
