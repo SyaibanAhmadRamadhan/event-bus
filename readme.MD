@@ -14,13 +14,17 @@
 - **Customizable Tracing**: Enable or disable tracing as needed, giving you full control over what to trace.
 
 ## Installation
-
-
-To install `go-event-bus`, you can use Go Modules by running the following command:
-
-```bash
+1. To install `go-event-bus`, you can use Go Modules by running the following command:
+```sh
+go get github.com/SyaibanAhmadRamadhan/event-bus@v1.24102.2321
+```
+2. To install `go-event-bus rabbitmq`, you can use Go Modules by running the following command:
+```sh
 go get github.com/SyaibanAhmadRamadhan/event-bus/rabbitmq@v1.24101.2351
-go get github.com/SyaibanAhmadRamadhan/event-bus/kafka@v1.24102.2305
+```
+3. To install `go-event-bus kafka`, you can use Go Modules by running the following command:
+```sh
+go get github.com/SyaibanAhmadRamadhan/event-bus/kafka@v1.24103.0018
 ```
 
 ## Contributions 
