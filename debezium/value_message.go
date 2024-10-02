@@ -1,6 +1,6 @@
 //go:build go1.22
 
-package eventbus
+package debezium
 
 import "github.com/guregu/null/v5"
 

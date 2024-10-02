@@ -16,7 +16,7 @@
 ## Installation
 1. To install `go-event-bus`, you can use Go Modules by running the following command:
 ```sh
-go get github.com/SyaibanAhmadRamadhan/event-bus@v1.24102.2321
+go get github.com/SyaibanAhmadRamadhan/event-bus@v1.24103.0025
 ```
 2. To install `go-event-bus rabbitmq`, you can use Go Modules by running the following command:
 ```sh
