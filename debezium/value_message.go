@@ -14,17 +14,6 @@ const (
 	Message  Operation = "m"
 )
 
-type UserValue struct {
-	ID              int64     `json:"id"`
-	Email           string    `json:"email"`
-	Password        string    `json:"password"`
-	RegisterAs      int16     `json:"register_as"`
-	IsEmailVerified bool      `json:"is_email_verified"`
-	CreatedAt       int64     `json:"created_at"`
-	UpdatedAt       int64     `json:"updated_at"`
-	DeletedAt       null.Time `json:"deleted_at"`
-}
-
 type Source struct {
 	Version   string     `json:"version"`
 	Connector string     `json:"connector"`
