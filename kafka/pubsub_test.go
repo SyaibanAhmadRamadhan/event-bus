@@ -6,7 +6,6 @@ import (
 	"fmt"
 	ekafka "github.com/SyaibanAhmadRamadhan/event-bus/kafka"
 	"github.com/segmentio/kafka-go"
-	"github.com/segmentio/kafka-go/sasl/plain"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
@@ -21,55 +20,41 @@ import (
 
 func TestName(t *testing.T) {
 	NewOtel("testing pub sub kafka")
-	mechanism := plain.Mechanism{
-		Username: "kafka",
-		Password: "pass12345",
-	}
-	sharedTransport := &kafka.Transport{
-		SASL: mechanism,
-	}
-	dialer := &kafka.Dialer{
-		Timeout:       10 * time.Second,
-		DualStack:     true,
-		SASLMechanism: mechanism,
-	}
 	k := ekafka.New(ekafka.KafkaCustomWriter(&kafka.Writer{
-		Addr:      kafka.TCP("localhost:8003"),
-		Topic:     "testtopic",
-		Transport: sharedTransport,
+		Addr:  kafka.TCP("localhost:9092"),
+		Topic: "testtopic",
 	}), ekafka.WithOtel())
 
-	_, err := k.Publish(context.Background(), ekafka.PubInput{
-		Messages: []kafka.Message{
-			{
-				Key:       []byte(fmt.Sprintf("address-%s", " req.RemoteAddr")),
-				Value:     []byte("body1"),
-				Partition: 1,
-			},
-		},
-	})
-	if err != nil {
-		fmt.Println(err)
-	}
-	_, err = k.Publish(context.Background(), ekafka.PubInput{
-		Messages: []kafka.Message{
-			{
-				Key:       []byte(fmt.Sprintf("address-%s", " req.RemoteAddr")),
-				Value:     []byte("body2"),
-				Partition: 1,
-			},
-		},
-	})
-	if err != nil {
-		fmt.Println(err)
-	}
-
+	//_, err := k.Publish(context.Background(), ekafka.PubInput{
+	//	Messages: []kafka.Message{
+	//		{
+	//			Key:       []byte(fmt.Sprintf("address-%s", " req.RemoteAddr")),
+	//			Value:     []byte("body1"),
+	//			Partition: 1,
+	//		},
+	//	},
+	//})
+	//if err != nil {
+	//	fmt.Println(err)
+	//}
+	//_, err = k.Publish(context.Background(), ekafka.PubInput{
+	//	Messages: []kafka.Message{
+	//		{
+	//			Key:       []byte(fmt.Sprintf("address-%s", " req.RemoteAddr")),
+	//			Value:     []byte("body2"),
+	//			Partition: 1,
+	//		},
+	//	},
+	//})
+	//if err != nil {
+	//	fmt.Println(err)
+	//}
+	//
 	r, err := k.Subscribe(context.Background(), ekafka.SubInput{
 		Config: kafka.ReaderConfig{
-			Brokers: []string{"localhost:8003"},
+			Brokers: []string{"localhost:9092"},
 			GroupID: "test-group",
-			Topic:   "testtopic",
-			Dialer:  dialer,
+			Topic:   "usersvc.public.users",
 		},
 	})
 	if err != nil {
@@ -83,6 +68,8 @@ func TestName(t *testing.T) {
 			t.Log(err)
 		}
 
+		fmt.Println(string(msg.Value))
+		fmt.Println(msg.Headers)
 		msgs = append(msgs, msg)
 		if len(msgs) > 1 {
 			err = r.Reader.CommitMessages(context.Background(), msgs...)
