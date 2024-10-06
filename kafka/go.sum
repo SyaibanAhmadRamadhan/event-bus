@@ -1,5 +1,7 @@
 github.com/SyaibanAhmadRamadhan/event-bus v1.240930.2159-0.20241002172816-de4ec361f301 h1:GzRg97oa6JqvCryEp/N6X46My27pMbeLWCH9pb59yb4=
 github.com/SyaibanAhmadRamadhan/event-bus v1.240930.2159-0.20241002172816-de4ec361f301/go.mod h1:ywhrb1NWwVEyCnd2gvP7QLEc5tOs3aFdCmyu//91zAs=
+github.com/SyaibanAhmadRamadhan/event-bus v1.241006.2023 h1:I6rwpl8BmT2X4FTH7T3cpDlcX37Bc7jXW0Eq/wx+59o=
+github.com/SyaibanAhmadRamadhan/event-bus v1.241006.2023/go.mod h1:ywhrb1NWwVEyCnd2gvP7QLEc5tOs3aFdCmyu//91zAs=
 github.com/cenkalti/backoff/v4 v4.3.0 h1:MyRJ/UdXutAwSAT+s3wNd7MfTIcy71VQueUuFK343L8=
 github.com/cenkalti/backoff/v4 v4.3.0/go.mod h1:Y3VNntkOUPxTVeUxJ/G5vcM//AlwfmyYozVcomhLiZE=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
