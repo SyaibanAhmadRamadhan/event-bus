@@ -24,7 +24,7 @@ go get github.com/SyaibanAhmadRamadhan/event-bus/rabbitmq@v1.24101.2351
 ```
 3. To install `go-event-bus kafka`, you can use Go Modules by running the following command:
 ```sh
-go get github.com/SyaibanAhmadRamadhan/event-bus/kafka@v1.24103.0018
+go get github.com/SyaibanAhmadRamadhan/event-bus/kafka@v1.241006.2020
 ```
 
 ## Contributions 
