@@ -15,6 +15,7 @@ func NewMockKafkaPubSub(mock *gomock.Controller) *eventbus.MockPubSub[PubInput, 
 
 var ErrProcessShutdownIsRunning = errors.New("process shutdown is running")
 var errClosed = errors.New("kafka closed")
+var ErrJsonUnmarshal = errors.New("json unmarshal error")
 
 type broker struct {
 	kafkaWriter  *kafka.Writer

@@ -2,10 +2,15 @@ package ekafka
 
 import (
 	"context"
+	"errors"
 	eventbus "github.com/SyaibanAhmadRamadhan/event-bus"
 )
 
 func (b *broker) Publish(ctx context.Context, input PubInput) (output PubOutput, err error) {
+	if b.kafkaWriter == nil {
+		return output, errors.New("kafka writer is not connected")
+	}
+
 	if input.Messages == nil || len(input.Messages) <= 0 {
 		return
 	}

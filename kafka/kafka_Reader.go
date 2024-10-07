@@ -2,6 +2,7 @@ package ekafka
 
 import (
 	"context"
+	"errors"
 	eventbus "github.com/SyaibanAhmadRamadhan/event-bus"
 	"github.com/segmentio/kafka-go"
 )
@@ -31,7 +32,7 @@ func (r *Reader) FetchMessage(ctx context.Context, v any) (kafka.Message, error)
 	if v != nil {
 		err = r.unmarshal(msg.Value, v)
 		if err != nil {
-			err = eventbus.Error(err)
+			err = eventbus.Error(errors.Join(err, ErrJsonUnmarshal))
 		}
 	}
 
@@ -57,7 +58,7 @@ func (r *Reader) ReadMessage(ctx context.Context, v any) (kafka.Message, error) 
 	if v != nil {
 		err = r.unmarshal(msg.Value, v)
 		if err != nil {
-			err = eventbus.Error(err)
+			err = eventbus.Error(errors.Join(err, ErrJsonUnmarshal))
 		}
 	}
 

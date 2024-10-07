@@ -2,6 +2,7 @@ package ekafka
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/segmentio/kafka-go"
 	"go.opentelemetry.io/otel"
@@ -78,7 +79,6 @@ func (r *opentelemetry) TracePubEnd(ctx context.Context, input PubOutput, err er
 
 	span.End()
 }
-
 func (r *opentelemetry) TraceSubStart(ctx context.Context, groupID string, msg *kafka.Message) context.Context {
 	carrier := NewMsgCarrier(msg)
 	ctx = r.propagators.Extract(ctx, carrier)
@@ -114,6 +114,9 @@ func (r *opentelemetry) TraceSubEnd(ctx context.Context, err error) {
 	if err != nil {
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
+		if errors.Is(err, ErrJsonUnmarshal) {
+			span.SetAttributes(semconv.ErrorTypeKey.String(ErrJsonUnmarshal.Error()))
+		}
 	}
 
 	span.End()
@@ -164,6 +167,7 @@ func (r *opentelemetry) TraceCommitMessagesEnd(ctx []context.Context, err error)
 		if err != nil {
 			span.RecordError(err)
 			span.SetStatus(codes.Error, err.Error())
+			span.SetAttributes(semconv.ErrorTypeKey.String("failed commit message"))
 		}
 
 		span.End()
