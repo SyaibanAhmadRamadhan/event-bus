@@ -14,12 +14,12 @@ func (b *broker) Subscribe(ctx context.Context, input SubInput) (output SubOutpu
 		subTracer:    b.subTracer,
 		commitTracer: b.commitTracer,
 		groupID:      input.Config.GroupID,
-		unmarshal:    nil,
+		unmarshal:    input.Unmarshal,
 	}
 	if input.Unmarshal == nil {
 		readerWrapper.unmarshal = json.Unmarshal
 	}
-	
+
 	output = SubOutput{
 		Reader: readerWrapper,
 	}
